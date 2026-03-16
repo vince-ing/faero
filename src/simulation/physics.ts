@@ -184,7 +184,16 @@ export function updateFish(
 
     fish.velocity = add(fish.velocity, scale(accel, dt));
 
-    // Clamp to speed range — fish always keep swimming
+    // Chill out the vertical movement so they prefer swimming horizontally
+    // This bleeds off vertical momentum every frame
+    fish.velocity.y *= (1 - Math.min(dt * 2.0, 1.0));
+    
+    // Slap a hard cap on vertical speed so they never rocket up or down
+    const maxVy = FISH_MAX_SPEED * 0.35; // adjust this decimal to tweak max vertical speed
+    if (fish.velocity.y > maxVy) fish.velocity.y = maxVy;
+    if (fish.velocity.y < -maxVy) fish.velocity.y = -maxVy;
+
+    // Clamp to overall speed range — fish always keep swimming
     const spd = length(fish.velocity);
     if (spd < FISH_MIN_SPEED) {
         fish.velocity = scale(normalize(fish.velocity), FISH_MIN_SPEED);
