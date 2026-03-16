@@ -80,9 +80,10 @@ gl.uniform3f(gl.getUniformLocation(this.program, 'u_colorIridescence'), 0.9, 1.3
     }
 
     resize(width: number, height: number): void {
-        this.canvas.width  = width;
-        this.canvas.height = height;
-        this.gl.viewport(0, 0, width, height);
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width  = width * dpr;
+        this.canvas.height = height * dpr;
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.uniform2f(this.u_resolution, width, height);
     }
 

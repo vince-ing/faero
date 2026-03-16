@@ -46,7 +46,7 @@ function spawnFish(screenW: number, screenH: number): Fish {
         scale:       depthScale * (0.85 + Math.random() * 0.3),
         flipX:       Math.random() < 0.5,
         wigglePhase: Math.random() * Math.PI * 2,
-        wiggleSpeed: 3.5 + Math.random() * 2.5,
+        wiggleSpeed: 1.0 + Math.random() * 1.5, 
         wiggleAmp:   0.6 + Math.random() * 0.4,
         opacity:     0,   // fade in from 0
         depth,

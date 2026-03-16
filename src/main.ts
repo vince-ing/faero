@@ -50,6 +50,9 @@ async function bootstrap(): Promise<void> {
         input,
     );
 
+    // Force an initial resize to apply DPI scaling right off the bat
+    onResize(window.innerWidth, window.innerHeight);
+
     window.addEventListener('resize', () => {
         onResize(window.innerWidth, window.innerHeight);
     });

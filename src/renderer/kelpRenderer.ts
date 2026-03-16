@@ -40,10 +40,12 @@ export class KelpRenderer {
     }
 
     resize(width: number, height: number): void {
+        const dpr = window.devicePixelRatio || 1;
         this.W = width;
         this.H = height;
-        this.canvas.width  = width;
-        this.canvas.height = height;
+        this.canvas.width  = width * dpr;
+        this.canvas.height = height * dpr;
+        this.ctx.scale(dpr, dpr);
         this._spawnBlades();
     }
 

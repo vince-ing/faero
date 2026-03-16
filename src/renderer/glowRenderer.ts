@@ -30,8 +30,9 @@ export class GlowRenderer {
     }
 
     resize(width: number, height: number): void {
-        this.canvas.width  = Math.max(1, width  >> 2);
-        this.canvas.height = Math.max(1, height >> 2);
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width  = Math.max(1, (width  >> 2) * dpr);
+        this.canvas.height = Math.max(1, (height >> 2) * dpr);
     }
 
     render(fish: Fish[]): void {

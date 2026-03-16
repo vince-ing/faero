@@ -34,19 +34,19 @@ export const SPARKLE_SPRITE = '/sprites/particles/sparkle.png';
 // ── Species size config ──────────────────────────────────────────────────────
 // Base render height in px at depth=1. Width scales with sprite aspect ratio.
 export const FISH_BASE_HEIGHT: Record<FishSpecies, number> = {
-    clownfish: 48,
-    angelfish: 64,
-    tang:      56,
-    tetra:     36,
-    guppy:     32,
+    clownfish: 88,
+    angelfish: 124,
+    tang:      76,
+    tetra:     86,
+    guppy:     82,
 };
 
 // ── Species spawn weights ────────────────────────────────────────────────────
 // Higher = more likely to be chosen when spawning a random fish
 export const FISH_SPAWN_WEIGHTS: Record<FishSpecies, number> = {
-    clownfish: 3,
-    angelfish: 2,
-    tang:      2,
+    clownfish: 5,
+    angelfish: 4,
+    tang:      4,
     tetra:     4,
     guppy:     4,
 };

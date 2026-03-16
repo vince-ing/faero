@@ -21,8 +21,10 @@ export class MainRenderer {
     }
 
     resize(width: number, height: number): void {
-        this.canvas.width  = width;
-        this.canvas.height = height;
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width  = width * dpr;
+        this.canvas.height = height * dpr;
+        this.ctx.scale(dpr, dpr);
     }
 
     render(
@@ -57,8 +59,8 @@ export class MainRenderer {
             sprites.drawFish(
                 this.ctx,
                 f.species,
-                f.position.x,
-                f.position.y,
+                Math.round(f.position.x), // Rounding stops the shimmer
+                Math.round(f.position.y),
                 f.scale,
                 f.flipX,
                 f.opacity,
