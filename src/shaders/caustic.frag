@@ -14,17 +14,21 @@ void main() {
     // 1. Base Water Color
     vec3 waterBase = u_color * 0.4; 
     
-    // 2. The Ray Math
-    vec2 lightPos = vec2(0.0, 1.5);
+    // 2. The Ray Math (FIXED: Pushed way up!)
+    // Pushing the origin high up forces the rays to fall almost vertically, 
+    // blanketing the entire top edge of the screen without leaving empty corners.
+    vec2 lightPos = vec2(0.0, 12.0); 
     vec2 dir = uv - lightPos;
     
-    float wobble = sin(v_uv.y * 3.0 - u_time * 0.5) * 0.05;
+    // Slightly increased wobble since the rays are longer now
+    float wobble = sin(v_uv.y * 3.0 - u_time * 0.5) * 0.1;
     float angle = atan(dir.x + wobble, -dir.y);
     
     float t = u_time * 0.2;
-    float beam1 = clamp(sin(angle * 12.0 + t), 0.0, 1.0);
-    float beam2 = clamp(sin(angle * 18.0 - t * 0.8), 0.0, 1.0);
-    float beam3 = clamp(sin(angle * 7.0 + t * 1.2), 0.0, 1.0);
+    // Increased the angle multipliers dramatically to compensate for the higher origin
+    float beam1 = clamp(sin(angle * 80.0 + t), 0.0, 1.0);
+    float beam2 = clamp(sin(angle * 120.0 - t * 0.8), 0.0, 1.0);
+    float beam3 = clamp(sin(angle * 50.0 + t * 1.2), 0.0, 1.0);
     
     float rays = beam1 * beam2 * 0.6 + beam3 * 0.4;
     rays = pow(rays, 1.5);
@@ -34,10 +38,8 @@ void main() {
     vec3 finalColor = mix(waterBase, rayColor, rays * 0.5);
     
     // 4. Alpha Setup
-    // u_strength is ~0.18, so multiplying by 0.9 gives us a chill ~16% opacity
     float safeAlpha = u_strength * 0.9;
     
-    // THE FIX: WebGL requires Premultiplied Alpha!
-    // We MUST multiply the RGB by the Alpha before handing it to the browser.
+    // Premultiplied alpha output
     gl_FragColor = vec4(finalColor * safeAlpha, safeAlpha);
 }

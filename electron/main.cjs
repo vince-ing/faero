@@ -5,6 +5,7 @@ let interactive = false;
 let visible = true;
 
 app.whenReady().then(() => {
+  // .bounds ensures we get the full monitor size, including the taskbar area
   const { width, height } = screen.getPrimaryDisplay().bounds;
 
   win = new BrowserWindow({
@@ -17,12 +18,16 @@ app.whenReady().then(() => {
     alwaysOnTop: true,
     skipTaskbar: true,
     hasShadow: false,
+    focusable: false, // Keeps that Windows 11 white bar bug away!
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: __dirname + '/preload.cjs',
     },
   });
+
+  // This is the magic sauce that forces the window OVER the Windows Taskbar
+  win.setAlwaysOnTop(true, 'screen-saver');
 
   win.loadURL('http://localhost:5173');
 
