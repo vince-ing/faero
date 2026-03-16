@@ -1,7 +1,6 @@
 import { CausticRenderer } from '../renderer/causticRenderer';
 import { BubbleRenderer }  from '../renderer/bubbleRenderer';
 import { MainRenderer }    from '../renderer/mainRenderer';
-import { GlowRenderer }    from '../renderer/glowRenderer';
 import { KelpRenderer }    from '../renderer/kelpRenderer';
 import { SpriteSheet }     from '../renderer/spriteSheet';
 import { FishSystem }      from '../simulation/fishSystem';
@@ -14,7 +13,6 @@ export function startLoop(
     caustic:   CausticRenderer,
     bubbles:   BubbleRenderer,
     main:      MainRenderer,
-    glow:      GlowRenderer,
     kelp:      KelpRenderer,
     sprites:   SpriteSheet,
     fish:      FishSystem,
@@ -41,7 +39,6 @@ export function startLoop(
         caustic.render(t);
         bubbles.render(t);
         kelp.render(t);
-        glow.render(fish.getSorted());
         main.render(
             fish.getSorted(),
             particles.getAll(),
@@ -58,7 +55,6 @@ export function startLoop(
             bubbles.resize(w, h);
             kelp.resize(w, h);
             main.resize(w, h);
-            glow.resize(w, h);
             fish.resize(w, h);
             particles.resize(w, h);
         },

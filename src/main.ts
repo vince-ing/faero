@@ -1,7 +1,6 @@
 import { CausticRenderer } from './renderer/causticRenderer';
 import { BubbleRenderer }  from './renderer/bubbleRenderer';
 import { MainRenderer }    from './renderer/mainRenderer';
-import { GlowRenderer }    from './renderer/glowRenderer';
 import { KelpRenderer }    from './renderer/kelpRenderer';
 import { SpriteSheet }     from './renderer/spriteSheet';
 import { FishSystem }      from './simulation/fishSystem';
@@ -17,15 +16,13 @@ async function bootstrap(): Promise<void> {
     // ── Renderers ─────────────────────────────────────────────────────────────
     const caustic  = new CausticRenderer(W, H);
     const bubbles  = new BubbleRenderer(W, H);
-    const glow     = new GlowRenderer(W, H);
     const kelp     = new KelpRenderer(W, H);
     const main     = new MainRenderer(W, H);
 
-    // z-index order: caustic(1) → bubbles(2) → kelp(3) → glow(3) → main(4)
+    // z-index order: caustic(1) → bubbles(2) → kelp(3) → main(4)
     document.body.appendChild(caustic.canvas);
     document.body.appendChild(bubbles.canvas);
     document.body.appendChild(kelp.canvas);
-    document.body.appendChild(glow.canvas);
     document.body.appendChild(main.canvas);
 
     // Blue tint on top of everything
@@ -44,13 +41,12 @@ async function bootstrap(): Promise<void> {
 
     // ── Loop ──────────────────────────────────────────────────────────────────
     const { onResize } = startLoop(
-        caustic, bubbles, main, glow, kelp,
+        caustic, bubbles, main, kelp,
         sprites,
         fish, particles,
         input,
     );
 
-    // Force an initial resize to apply DPI scaling right off the bat
     onResize(window.innerWidth, window.innerHeight);
 
     window.addEventListener('resize', () => {
