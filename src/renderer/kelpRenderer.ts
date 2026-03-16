@@ -200,10 +200,10 @@ export class KelpRenderer {
 
             // Soft midrib highlight down the spine
             const hlGrad = ctx.createLinearGradient(b.x, baseY, tipX, tipY);
-            hlGrad.addColorStop(0,    'rgba(160,255,190,0.00)');
-            hlGrad.addColorStop(0.2,  'rgba(160,255,190,0.18)');
-            hlGrad.addColorStop(0.65, 'rgba(210,255,225,0.28)');
-            hlGrad.addColorStop(1,    'rgba(210,255,225,0.00)');
+            hlGrad.addColorStop(0,    'rgba(20,80,80,0.00)');
+            hlGrad.addColorStop(0.2,  'rgba(20,80,80,0.25)');
+            hlGrad.addColorStop(0.65, 'rgba(30,100,90,0.35)');
+            hlGrad.addColorStop(1,    'rgba(30,100,90,0.00)');
 
             ctx.beginPath();
             ctx.moveTo(spineX[0], spineY[0]);

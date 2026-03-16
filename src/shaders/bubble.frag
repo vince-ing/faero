@@ -62,18 +62,19 @@ vec4 booble(vec2 te, vec2 id, float numCells) {
     float zb3 = noise2(te1 * 200.11 * d);
     float zb4 = noise2(te1 * 200.11 * d + vec2(20.0));
 
-    vec4 colorb = vec4(1.0);
+    vec4 colorb = vec4(0.4, 0.8, 2.4, 1.0);
     colorb.xyz = colorb.xyz * (0.7 + noise2(te1 * 1000.11 * d) * 0.3);
     zb2 = max(pow(zb2, 20.1), 0.01);
     colorb.xyz = colorb.xyz * (zb2 * 1.9);
 
     vec4 color = vec4(
-        noise2(te2 * 10.8 * u_noiseScale),
-        noise2(te2 * 9.5  * u_noiseScale + vec2(15.0, 15.0)),
-        noise2(te2 * 11.2 * u_noiseScale + vec2(12.0, 12.0)),
+        noise2(te2 * 10.8 * u_noiseScale) * 1.0,
+        noise2(te2 * 9.5  * u_noiseScale + vec2(15.0, 15.0)) * 1.6,
+        noise2(te2 * 11.2 * u_noiseScale + vec2(12.0, 12.0)) * 2.2,
         1.0
     );
-    color = mix(color, vec4(1.0), noise2(te2 * 20.5 + vec2(200.0, 200.0)));
+    color = mix(color, vec4(0.1, 0.3, 0.8, 1.0), noise2(te2 * 20.5 + vec2(200.0, 200.0)) * 0.12);
+    color = mix(color, vec4(1.0), noise2(te2 * 20.5 + vec2(200.0, 200.0)) * 0.35);
     color.xyz = color.xyz * (0.7 + noise2(te2 * 1000.11 * d) * 0.3);
     color.xyz = color.xyz * (0.2 + zb1 * 1.9);
 
@@ -89,7 +90,7 @@ vec4 booble(vec2 te, vec2 id, float numCells) {
     f3 = pow(f3, 4.0);
 
     return vec4(color * max(min(f1 + f2, 1.0), -0.5)
-              + vec4(zb3) * f3
+              + mix(vec4(0.1, 0.3, 0.8, 1.0), vec4(1.0), 0.65) * zb3 * f3
               - vec4(zb4) * (f2 * 0.5 + f1) * 0.5);
 }
 

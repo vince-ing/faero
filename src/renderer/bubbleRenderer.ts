@@ -53,8 +53,8 @@ export class BubbleRenderer {
         gl.useProgram(this.program);
 
         gl.uniform1f(gl.getUniformLocation(this.program, 'u_noiseScale'), 1.0);
-        gl.uniform3f(gl.getUniformLocation(this.program, 'u_colorBase'), 0.05, 0.08, 0.12);
-        gl.uniform3f(gl.getUniformLocation(this.program, 'u_colorIridescence'), 1.1, 1.2, 1.3);
+        gl.uniform3f(gl.getUniformLocation(this.program, 'u_colorBase'), 0.02, 0.08, 0.25);
+gl.uniform3f(gl.getUniformLocation(this.program, 'u_colorIridescence'), 0.9, 1.3, 2.0);
 
         // Master bubble amount — scales all density layers together
         gl.uniform1f(gl.getUniformLocation(this.program, 'u_amount'), BUBBLE_AMOUNT);
