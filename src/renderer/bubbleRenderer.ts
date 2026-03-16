@@ -1,8 +1,6 @@
 import vertSrc from '../shaders/bubble.vert?raw';
 import fragSrc from '../shaders/bubble.frag?raw';
 
-
-
 function compileShader(gl: WebGLRenderingContext, type: number, src: string): WebGLShader {
     const shader = gl.createShader(type)!;
     gl.shaderSource(shader, src);
@@ -21,19 +19,7 @@ function createProgram(gl: WebGLRenderingContext, vert: string, frag: string): W
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
         throw new Error('Bubble program link error: ' + gl.getProgramInfoLog(program));
     }
-
-    const noiseScaleLoc = gl.getUniformLocation(program, 'u_noiseScale');
-    const colorBaseLoc = gl.getUniformLocation(program, 'u_colorBase');
-    const colorIridLoc = gl.getUniformLocation(program, 'u_colorIridescence');
-
-    // 1.0 is the default. Lower values (e.g., 0.5) make the noise larger/smoother
-    gl.uniform1f(noiseScaleLoc, 1.0); 
-
-    // A subtle dark blue-grey for the faint glass edge [R, G, B]
-    gl.uniform3f(colorBaseLoc, 0.05, 0.08, 0.12); 
-
-    // A slight cyan/purple boost to the iridescence [R, G, B]
-    gl.uniform3f(colorIridLoc, 1.1, 1.2, 1.3);
+    // We removed the uniform assignments from here!
     return program;
 }
 
@@ -55,7 +41,6 @@ export class BubbleRenderer {
             width: 100%;
             height: 100%;
             pointer-events: none;
-            mix-blend-mode: overlay;
             z-index: 2;
         `;
 
@@ -63,14 +48,23 @@ export class BubbleRenderer {
         if (!gl) throw new Error('WebGL not supported');
         this.gl = gl;
 
-        // Enable alpha blending
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         this.program = createProgram(gl, vertSrc, fragSrc);
-        gl.useProgram(this.program);
+        
+        // The program MUST be in use before setting uniforms
+        gl.useProgram(this.program); 
 
-        // Full-screen quad
+        // Now we can safely set our iridescence modifiers!
+        const noiseScaleLoc = gl.getUniformLocation(this.program, 'u_noiseScale');
+        const colorBaseLoc  = gl.getUniformLocation(this.program, 'u_colorBase');
+        const colorIridLoc  = gl.getUniformLocation(this.program, 'u_colorIridescence');
+
+        gl.uniform1f(noiseScaleLoc, 1.0); 
+        gl.uniform3f(colorBaseLoc, 0.05, 0.08, 0.12); 
+        gl.uniform3f(colorIridLoc, 1.1, 1.2, 1.3);
+
         const verts = new Float32Array([
             -1, -1,   1, -1,  -1,  1,
             -1,  1,   1, -1,   1,  1,

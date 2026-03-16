@@ -53,7 +53,6 @@ export class CausticRenderer {
             width: 100%;
             height: 100%;
             pointer-events: none;
-            mix-blend-mode: screen;
             z-index: 1;
         `;
 
