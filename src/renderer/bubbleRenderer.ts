@@ -1,13 +1,13 @@
 import vertSrc from '../shaders/bubble.vert?raw';
 import fragSrc from '../shaders/bubble.frag?raw';
+import { BUBBLE_AMOUNT, BUBBLE_SIZE_LARGE, BUBBLE_SIZE_MEDIUM, BUBBLE_SIZE_SMALL, BUBBLE_SIZE_TINY, BUBBLE_SIZE_MICRO, BUBBLE_SIZE_NANO } from '../core/constants';
 
 function compileShader(gl: WebGLRenderingContext, type: number, src: string): WebGLShader {
     const shader = gl.createShader(type)!;
     gl.shaderSource(shader, src);
     gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
         throw new Error('Bubble shader compile error: ' + gl.getShaderInfoLog(shader));
-    }
     return shader;
 }
 
@@ -16,10 +16,8 @@ function createProgram(gl: WebGLRenderingContext, vert: string, frag: string): W
     gl.attachShader(program, compileShader(gl, gl.VERTEX_SHADER, vert));
     gl.attachShader(program, compileShader(gl, gl.FRAGMENT_SHADER, frag));
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
         throw new Error('Bubble program link error: ' + gl.getProgramInfoLog(program));
-    }
-    // We removed the uniform assignments from here!
     return program;
 }
 
@@ -52,23 +50,22 @@ export class BubbleRenderer {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         this.program = createProgram(gl, vertSrc, fragSrc);
-        
-        // The program MUST be in use before setting uniforms
-        gl.useProgram(this.program); 
+        gl.useProgram(this.program);
 
-        // Now we can safely set our iridescence modifiers!
-        const noiseScaleLoc = gl.getUniformLocation(this.program, 'u_noiseScale');
-        const colorBaseLoc  = gl.getUniformLocation(this.program, 'u_colorBase');
-        const colorIridLoc  = gl.getUniformLocation(this.program, 'u_colorIridescence');
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_noiseScale'), 1.0);
+        gl.uniform3f(gl.getUniformLocation(this.program, 'u_colorBase'), 0.05, 0.08, 0.12);
+        gl.uniform3f(gl.getUniformLocation(this.program, 'u_colorIridescence'), 1.1, 1.2, 1.3);
 
-        gl.uniform1f(noiseScaleLoc, 1.0); 
-        gl.uniform3f(colorBaseLoc, 0.05, 0.08, 0.12); 
-        gl.uniform3f(colorIridLoc, 1.1, 1.2, 1.3);
+        // Master bubble amount — scales all density layers together
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_amount'), BUBBLE_AMOUNT);
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_sizeLarge'),  BUBBLE_SIZE_LARGE);
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_sizeMedium'), BUBBLE_SIZE_MEDIUM);
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_sizeSmall'),  BUBBLE_SIZE_SMALL);
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_sizeTiny'),   BUBBLE_SIZE_TINY);
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_sizeMicro'),  BUBBLE_SIZE_MICRO);
+        gl.uniform1f(gl.getUniformLocation(this.program, 'u_sizeNano'),   BUBBLE_SIZE_NANO);
 
-        const verts = new Float32Array([
-            -1, -1,   1, -1,  -1,  1,
-            -1,  1,   1, -1,   1,  1,
-        ]);
+        const verts = new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]);
         const buf = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
@@ -79,7 +76,6 @@ export class BubbleRenderer {
 
         this.u_time       = gl.getUniformLocation(this.program, 'u_time')!;
         this.u_resolution = gl.getUniformLocation(this.program, 'u_resolution')!;
-
         gl.uniform2f(this.u_resolution, width, height);
     }
 

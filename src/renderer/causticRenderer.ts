@@ -60,10 +60,13 @@ export class CausticRenderer {
         if (!gl) throw new Error('WebGL not supported');
         this.gl = gl;
 
+        // Additive blending — rays only add light, never darken
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+
         this.program = createProgram(gl, vertSrc, fragSrc);
         gl.useProgram(this.program);
 
-        // Full-screen quad — two triangles covering clip space
         const verts = new Float32Array([
             -1, -1,   1, -1,   -1,  1,
             -1,  1,   1, -1,    1,  1,

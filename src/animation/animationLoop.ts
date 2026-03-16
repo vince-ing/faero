@@ -1,12 +1,12 @@
-import { CausticRenderer }  from '../renderer/causticRenderer';
-import { BubbleRenderer }   from '../renderer/bubbleRenderer';
-import { MainRenderer }     from '../renderer/mainRenderer';
-import { GlowRenderer }     from '../renderer/glowRenderer';
-import { SpriteSheet }      from '../renderer/spriteSheet';
-import { FishSystem }       from '../simulation/fishSystem';
-import { PlantSystem }      from '../simulation/plantSystem';
-import { ParticleSystem }   from '../simulation/particleSystem';
-import { InputController }  from '../interaction/inputController';
+import { CausticRenderer } from '../renderer/causticRenderer';
+import { BubbleRenderer }  from '../renderer/bubbleRenderer';
+import { MainRenderer }    from '../renderer/mainRenderer';
+import { GlowRenderer }    from '../renderer/glowRenderer';
+import { KelpRenderer }    from '../renderer/kelpRenderer';
+import { SpriteSheet }     from '../renderer/spriteSheet';
+import { FishSystem }      from '../simulation/fishSystem';
+import { ParticleSystem }  from '../simulation/particleSystem';
+import { InputController } from '../interaction/inputController';
 
 const MOUSE_SCARE_RADIUS = 160;
 
@@ -15,9 +15,9 @@ export function startLoop(
     bubbles:   BubbleRenderer,
     main:      MainRenderer,
     glow:      GlowRenderer,
+    kelp:      KelpRenderer,
     sprites:   SpriteSheet,
     fish:      FishSystem,
-    plants:    PlantSystem,
     particles: ParticleSystem,
     input:     InputController,
 ): { onResize: (w: number, h: number) => void } {
@@ -35,16 +35,15 @@ export function startLoop(
 
         // ── Simulate ──────────────────────────────────────────────────────────
         fish.update(dt, mouse, MOUSE_SCARE_RADIUS);
-        plants.update(dt);
         particles.update(dt);
 
         // ── Render ────────────────────────────────────────────────────────────
         caustic.render(t);
         bubbles.render(t);
+        kelp.render(t);
         glow.render(fish.getSorted());
         main.render(
             fish.getSorted(),
-            plants.getAll(),
             particles.getAll(),
             sprites,
             h,
@@ -57,10 +56,10 @@ export function startLoop(
         onResize(w: number, h: number): void {
             caustic.resize(w, h);
             bubbles.resize(w, h);
+            kelp.resize(w, h);
             main.resize(w, h);
             glow.resize(w, h);
             fish.resize(w, h);
-            plants.resize(w, h);
             particles.resize(w, h);
         },
     };

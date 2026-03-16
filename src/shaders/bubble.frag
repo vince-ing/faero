@@ -5,9 +5,19 @@ varying vec2 v_uv;
 uniform float u_time;
 uniform vec2  u_resolution;
 
-uniform float u_noiseScale;       // Controls how tight the iridescence pattern is
-uniform vec3  u_colorBase;        // The faint structural color of the glass edge
-uniform vec3  u_colorIridescence; // Multiplier to tint the bright reflections
+uniform float u_noiseScale;
+uniform vec3  u_colorBase;
+uniform vec3  u_colorIridescence;
+
+// Master bubble amount 0.0–1.0, controlled via BUBBLE_AMOUNT in constants.ts
+uniform float u_amount;
+// Per-size-tier toggles 0.0–1.0, controlled via BUBBLE_SIZE_* in constants.ts
+uniform float u_sizeLarge;
+uniform float u_sizeMedium;
+uniform float u_sizeSmall;
+uniform float u_sizeTiny;
+uniform float u_sizeMicro;
+uniform float u_sizeNano;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -42,14 +52,11 @@ float hashNull(vec2 x) {
     return fract(523.0 * sin(dot(x, vec2(53.3158, 43.6143))));
 }
 
-// ── Updated Bubble Appearance ───────────────────────────────────────────────
 vec4 booble(vec2 te, vec2 id, float numCells) {
     float d = dot(te, te);
-
     vec2 te1 = te + (id - vec2(0.5, 0.5)) * 0.4 / numCells;
     vec2 te2 = -te1;
 
-    // Apply the noise scale uniform here
     float zb1 = max(pow(noise2(te2 * 1000.11 * d * u_noiseScale), 10.0), 0.01);
     float zb2 = noise2(te1 * 1000.11 * d * u_noiseScale);
     float zb3 = noise2(te1 * 200.11 * d);
@@ -60,7 +67,6 @@ vec4 booble(vec2 te, vec2 id, float numCells) {
     zb2 = max(pow(zb2, 20.1), 0.01);
     colorb.xyz = colorb.xyz * (zb2 * 1.9);
 
-    // Apply noise scale to the color generation
     vec4 color = vec4(
         noise2(te2 * 10.8 * u_noiseScale),
         noise2(te2 * 9.5  * u_noiseScale + vec2(15.0, 15.0)),
@@ -87,7 +93,6 @@ vec4 booble(vec2 te, vec2 id, float numCells) {
               - vec4(zb4) * (f2 * 0.5 + f1) * 0.5);
 }
 
-// ── Updated Voronoi Cell Layer ────────────────────────────────────────────
 vec4 Cells(vec2 p, vec2 move, float numCells, float count, float rise) {
     vec2 inp  = p + move;
     inp.y    -= rise;
@@ -95,7 +100,7 @@ vec4 Cells(vec2 p, vec2 move, float numCells, float count, float rise) {
 
     float d   = 1.0;
     vec2  pos = vec2(0.0);
-    vec2  cellId = vec2(0.0);   // stable integer grid coords of winning cell
+    vec2  cellId = vec2(0.0);
 
     for (int xo = -1; xo <= 1; xo++) {
         for (int yo = -1; yo <= 1; yo++) {
@@ -108,7 +113,7 @@ vec4 Cells(vec2 p, vec2 move, float numCells, float count, float rise) {
                 if (d > dr) {
                     d      = dr;
                     pos    = tpA;
-                    cellId = tp;    // integer grid coords — stable, not animated
+                    cellId = tp;
                 }
             }
         }
@@ -116,12 +121,8 @@ vec4 Cells(vec2 p, vec2 move, float numCells, float count, float rise) {
 
     if (d >= 0.06) return vec4(0.0);
     vec2 te = inp - pos;
-
-    // Hash the integer cellId to safely bound the noise offset between 0.0 and 1.0
     return booble(te, hash2(cellId), numCells);
 }
-
-// ── Main ──────────────────────────────────────────────────────────────────────
 
 void main() {
     vec2  uv   = v_uv * vec2(u_resolution.x / u_resolution.y, 1.0) * 0.5;
@@ -133,12 +134,13 @@ void main() {
 
     vec4 e = vec4(0.0);
 
-    vec4 cr1 = Cells(uv, vec2(20.2449,  93.78)  + l1, 2.0,  0.50, rise * 0.30);
-    vec4 cr2 = Cells(uv, vec2(0.0,        0.0),          3.0,  0.50, rise * 0.50);
-    vec4 cr3 = Cells(uv, vec2(230.79,  193.2)   + l2, 4.0,  0.50, rise * 0.70);
-    vec4 cr4 = Cells(uv, vec2(200.19,  393.2)   + l3, 7.0,  0.80, rise * 1.00);
-    vec4 cr5 = Cells(uv, vec2(10.3245, 233.645) + l3, 9.2,  0.90, rise * 1.20);
-    vec4 cr6 = Cells(uv, vec2(10.3245, 233.645) + l3, 14.2, 0.95, rise * 1.50);
+    float a = u_amount;
+    vec4 cr1 = Cells(uv, vec2(20.2449,  93.78)  + l1, 2.0,  1.0 - a * 0.50 * u_sizeLarge,  rise * 0.30);
+    vec4 cr2 = Cells(uv, vec2(0.0,       0.0),         3.0,  1.0 - a * 0.50 * u_sizeMedium, rise * 0.50);
+    vec4 cr3 = Cells(uv, vec2(230.79,  193.2)   + l2, 4.0,  1.0 - a * 0.50 * u_sizeSmall,  rise * 0.70);
+    vec4 cr4 = Cells(uv, vec2(200.19,  393.2)   + l3, 7.0,  1.0 - a * 0.80 * u_sizeTiny,   rise * 1.00);
+    vec4 cr5 = Cells(uv, vec2(10.3245, 233.645) + l3, 9.2,  1.0 - a * 0.90 * u_sizeMicro,  rise * 1.20);
+    vec4 cr6 = Cells(uv, vec2(10.3245, 233.645) + l3, 14.2, 1.0 - a * 0.95 * u_sizeNano,   rise * 1.50);
 
     e = max(e - vec4(dot(cr6, cr6)) * 0.1, 0.0) + cr6 * 1.6;
     e = max(e - vec4(dot(cr5, cr5)) * 0.1, 0.0) + cr5 * 1.6;
@@ -147,21 +149,13 @@ void main() {
     e = max(e - vec4(dot(cr2, cr2)) * 0.1, 0.0) + cr2 * 1.4;
     e = max(e - vec4(dot(cr1, cr1)) * 0.1, 0.0) + cr1 * 1.8;
 
-    // Get the raw light and calculate its intensity
     vec3 rawColor = max(e.rgb, 0.0);
     float intensity = dot(rawColor, vec3(0.299, 0.587, 0.114));
 
-    // 1. Keep your vibrant original colors for the highlights
-    vec3 bright = min(rawColor * 1.2, 1.0); 
-    
-    // 2. Make the faint/edge parts a deep glassy shadow
-    vec3 darkEdge = vec3(0.0, 0.03, 0.08); 
-    
-    // 3. Mix them! High intensity = bright colors. Low intensity = dark edge.
+    vec3 bright   = min(rawColor * 1.2, 1.0);
+    vec3 darkEdge = vec3(0.0, 0.03, 0.08);
     vec3 finalColor = mix(darkEdge, bright, smoothstep(0.05, 0.4, intensity));
 
-    // 4. Set the alpha so the dark edge actually shows up on white backgrounds
     float alpha = clamp(intensity * 1.5, 0.0, 1.0);
-
     gl_FragColor = vec4(finalColor, alpha);
 }
