@@ -25,7 +25,7 @@ export const BUBBLE_SIZE_NANO   = 0.5;  // nano          (grid 14.2)
 export const PARTICLE_MAX        = 120;
 
 // ── Caustics ─────────────────────────────────────────────────────────────────
-export const CAUSTIC_STRENGTH    = 0.18;
+export const CAUSTIC_STRENGTH    = 0.35;
 export const CAUSTIC_SPEED       = 0.6;
 
 // ── Glow ─────────────────────────────────────────────────────────────────────
