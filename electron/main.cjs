@@ -4,8 +4,12 @@ let win;
 let interactive = false;
 let visible = true;
 
+// WM_ACTIVATE = 0x0006
+// Returning 0 tells Windows this window never "activates",
+// which prevents the shell from dimming the taskbar beneath it.
+const WM_ACTIVATE = 0x0006;
+
 app.whenReady().then(() => {
-  // .bounds ensures we get the full monitor size, including the taskbar area
   const { width, height } = screen.getPrimaryDisplay().bounds;
 
   win = new BrowserWindow({
@@ -18,7 +22,7 @@ app.whenReady().then(() => {
     alwaysOnTop: true,
     skipTaskbar: true,
     hasShadow: false,
-    focusable: false, // Keeps that Windows 11 white bar bug away!
+    focusable: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -26,32 +30,34 @@ app.whenReady().then(() => {
     },
   });
 
-  // This is the magic sauce that forces the window OVER the Windows Taskbar
   win.setAlwaysOnTop(true, 'screen-saver');
+  win.setPosition(0, 0);
+  win.setSize(width, height);
+
+  // Intercept WM_ACTIVATE so Windows never considers this window "active"
+  // This prevents the taskbar from entering its "covered" dim state
+  win.hookWindowMessage(WM_ACTIVATE, () => {
+    win.setEnabled(false);
+    win.setEnabled(true);
+  });
 
   win.loadURL('http://localhost:5173');
-
-  // Start in click-through mode
   win.setIgnoreMouseEvents(true, { forward: true });
 
-  // Allow renderer to toggle click-through per frame
   ipcMain.on('set-ignore-mouse', (_, ignore) => {
     win.setIgnoreMouseEvents(ignore, { forward: true });
   });
 
-  // Alt+I — toggle interactive mode (lets you click on UI)
   globalShortcut.register('Alt+I', () => {
     interactive = !interactive;
     win.setIgnoreMouseEvents(!interactive, { forward: true });
   });
 
-  // Alt+L — hide/show overlay
   globalShortcut.register('Alt+L', () => {
     visible = !visible;
     visible ? win.showInactive() : win.hide();
   });
 
-  // Alt+Q — quit
   globalShortcut.register('Alt+Q', () => app.quit());
 });
 

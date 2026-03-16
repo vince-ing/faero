@@ -10,3 +10,12 @@ html, body {
     overflow: hidden;
     background: transparent;
 }
+
+#blue-tint {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: rgba(0, 197, 250, 0.13);
+    mix-blend-mode: hue;
+}

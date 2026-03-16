@@ -10,12 +10,21 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": ["electron", "aquarium", "overlay", "frutiger-aero", "webgl"],
+  "keywords": [
+    "electron",
+    "aquarium",
+    "overlay",
+    "frutiger-aero",
+    "webgl"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^35.0.0",
+    "electron": "^29.0.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.0"
+  },
+  "dependencies": {
+    "koffi": "^2.15.2"
   }
 }

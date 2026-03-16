@@ -14,14 +14,17 @@ async function bootstrap(): Promise<void> {
     const W = window.innerWidth;
     const H = window.innerHeight;
 
+    // Blue tint overlay — shifts the whole screen cooler without changing luminance
+    const tint = document.createElement('div');
+    tint.id = 'blue-tint';
+    document.body.appendChild(tint);
+
     // ── Renderers ─────────────────────────────────────────────────────────────
     const caustic  = new CausticRenderer(W, H);
     const bubbles  = new BubbleRenderer(W, H);
     const glow     = new GlowRenderer(W, H);
     const main     = new MainRenderer(W, H);
 
-    // Stack canvases in z-index order:
-    // caustic (z1, screen) → bubbles (z2, overlay) → glow (z3, screen) → main (z4, normal)
     document.body.appendChild(caustic.canvas);
     document.body.appendChild(bubbles.canvas);
     document.body.appendChild(glow.canvas);
