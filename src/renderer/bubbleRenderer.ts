@@ -1,0 +1,112 @@
+import vertSrc from '../shaders/bubble.vert?raw';
+import fragSrc from '../shaders/bubble.frag?raw';
+
+
+
+function compileShader(gl: WebGLRenderingContext, type: number, src: string): WebGLShader {
+    const shader = gl.createShader(type)!;
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        throw new Error('Bubble shader compile error: ' + gl.getShaderInfoLog(shader));
+    }
+    return shader;
+}
+
+function createProgram(gl: WebGLRenderingContext, vert: string, frag: string): WebGLProgram {
+    const program = gl.createProgram()!;
+    gl.attachShader(program, compileShader(gl, gl.VERTEX_SHADER, vert));
+    gl.attachShader(program, compileShader(gl, gl.FRAGMENT_SHADER, frag));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        throw new Error('Bubble program link error: ' + gl.getProgramInfoLog(program));
+    }
+
+    const noiseScaleLoc = gl.getUniformLocation(program, 'u_noiseScale');
+    const colorBaseLoc = gl.getUniformLocation(program, 'u_colorBase');
+    const colorIridLoc = gl.getUniformLocation(program, 'u_colorIridescence');
+
+    // 1.0 is the default. Lower values (e.g., 0.5) make the noise larger/smoother
+    gl.uniform1f(noiseScaleLoc, 1.0); 
+
+    // A subtle dark blue-grey for the faint glass edge [R, G, B]
+    gl.uniform3f(colorBaseLoc, 0.05, 0.08, 0.12); 
+
+    // A slight cyan/purple boost to the iridescence [R, G, B]
+    gl.uniform3f(colorIridLoc, 1.1, 1.2, 1.3);
+    return program;
+}
+
+export class BubbleRenderer {
+    readonly canvas: HTMLCanvasElement;
+    private gl:      WebGLRenderingContext;
+    private program: WebGLProgram;
+
+    private u_time:       WebGLUniformLocation;
+    private u_resolution: WebGLUniformLocation;
+
+    constructor(width: number, height: number) {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width  = width;
+        this.canvas.height = height;
+        this.canvas.style.cssText = `
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            z-index: 2;
+        `;
+
+        const gl = this.canvas.getContext('webgl');
+        if (!gl) throw new Error('WebGL not supported');
+        this.gl = gl;
+
+        // Enable alpha blending
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+        this.program = createProgram(gl, vertSrc, fragSrc);
+        gl.useProgram(this.program);
+
+        // Full-screen quad
+        const verts = new Float32Array([
+            -1, -1,   1, -1,  -1,  1,
+            -1,  1,   1, -1,   1,  1,
+        ]);
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+        const a_pos = gl.getAttribLocation(this.program, 'a_position');
+        gl.enableVertexAttribArray(a_pos);
+        gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, 0, 0);
+
+        this.u_time       = gl.getUniformLocation(this.program, 'u_time')!;
+        this.u_resolution = gl.getUniformLocation(this.program, 'u_resolution')!;
+
+        gl.uniform2f(this.u_resolution, width, height);
+    }
+
+    resize(width: number, height: number): void {
+        this.canvas.width  = width;
+        this.canvas.height = height;
+        this.gl.viewport(0, 0, width, height);
+        this.gl.uniform2f(this.u_resolution, width, height);
+    }
+
+    render(time: number): void {
+        const gl = this.gl;
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.uniform1f(this.u_time, time);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    dispose(): void {
+        this.gl.deleteProgram(this.program);
+        this.canvas.remove();
+    }
+}
