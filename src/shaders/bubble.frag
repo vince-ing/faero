@@ -9,9 +9,7 @@ uniform float u_noiseScale;
 uniform vec3  u_colorBase;
 uniform vec3  u_colorIridescence;
 
-// Master bubble amount 0.0–1.0, controlled via BUBBLE_AMOUNT in constants.ts
 uniform float u_amount;
-// Per-size-tier toggles 0.0–1.0, controlled via BUBBLE_SIZE_* in constants.ts
 uniform float u_sizeLarge;
 uniform float u_sizeMedium;
 uniform float u_sizeSmall;
@@ -19,12 +17,9 @@ uniform float u_sizeTiny;
 uniform float u_sizeMicro;
 uniform float u_sizeNano;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 vec4 NC0 = vec4(0.0, 157.0, 113.0, 270.0);
 vec4 NC1 = vec4(1.0, 158.0, 114.0, 271.0);
 
-vec4 hash4(vec4 n) { return fract(sin(n) * 753.5453123); }
 vec2 hash2(vec2 n) { return fract(sin(n) * 753.5453123); }
 
 float noise2(vec2 x) {
@@ -94,21 +89,32 @@ vec4 booble(vec2 te, vec2 id, float numCells) {
               - vec4(zb4) * (f2 * 0.5 + f1) * 0.5);
 }
 
-vec4 Cells(vec2 p, vec2 move, float numCells, float count, float rise) {
-    vec2 inp  = p + move;
-    inp.y    -= rise;
-    inp      *= numCells;
+// Rise is applied to the UV *before* cell lookup so the entire grid scrolls
+// upward continuously. No per-cell fract() wrapping means no bubbles popping
+// in from an invisible edge — they simply drift up and off the top.
+vec4 Cells(vec2 p, vec2 move, float numCells, float count, float riseSpeed, float jitterAmt) {
+    // Scroll the whole UV upward — no fract, so it's unbounded and seamless
+    vec2 uv = p + move;
+    uv.y -= u_time * riseSpeed;
 
-    float d   = 1.0;
-    vec2  pos = vec2(0.0);
+    vec2 inp = uv * numCells;
+
+    float d      = 1.0;
+    vec2  pos    = vec2(0.0);
     vec2  cellId = vec2(0.0);
 
     for (int xo = -1; xo <= 1; xo++) {
         for (int yo = -1; yo <= 1; yo++) {
-            vec2 tp  = floor(inp) + vec2(xo, yo);
-            vec2 rr  = mod(tp, numCells);
-            vec2 tpA = tp + (hash2a(rr, u_time * 0.1) + hash2a(rr, u_time * 0.1 + 0.25)) * 0.5;
-            vec2 l   = inp - tpA;
+            vec2 tp = floor(inp) + vec2(xo, yo);
+            vec2 rr = mod(tp, numCells);
+
+            // Per-cell position jitter keeps each bubble on its own spot,
+            // staggered so they never all jump simultaneously
+            float cellPhase = hashNull(rr) * jitterAmt;
+            vec2 tpA = tp + (hash2a(rr, u_time * 0.1 + cellPhase)
+                           + hash2a(rr, u_time * 0.1 + cellPhase + 0.25)) * 0.5;
+
+            vec2  l  = inp - tpA;
             float dr = dot(l, l);
             if (hashNull(rr) > count) {
                 if (d > dr) {
@@ -126,22 +132,21 @@ vec4 Cells(vec2 p, vec2 move, float numCells, float count, float rise) {
 }
 
 void main() {
-    vec2  uv   = v_uv * vec2(u_resolution.x / u_resolution.y, 1.0) * 0.5;
-    float rise = fract(u_time * 0.018);
+    vec2 uv = v_uv * vec2(u_resolution.x / u_resolution.y, 1.0) * 0.5;
 
     vec2 l1 = vec2( u_time * 0.020,  u_time * 0.020);
     vec2 l2 = vec2(-u_time * 0.010,  u_time * 0.007);
     vec2 l3 = vec2(0.0,              u_time * 0.010);
 
     vec4 e = vec4(0.0);
-
     float a = u_amount;
-    vec4 cr1 = Cells(uv, vec2(20.2449,  93.78)  + l1, 2.0,  1.0 - a * 0.50 * u_sizeLarge,  rise * 0.30);
-    vec4 cr2 = Cells(uv, vec2(0.0,       0.0),         3.0,  1.0 - a * 0.50 * u_sizeMedium, rise * 0.50);
-    vec4 cr3 = Cells(uv, vec2(230.79,  193.2)   + l2, 4.0,  1.0 - a * 0.50 * u_sizeSmall,  rise * 0.70);
-    vec4 cr4 = Cells(uv, vec2(200.19,  393.2)   + l3, 7.0,  1.0 - a * 0.80 * u_sizeTiny,   rise * 1.00);
-    vec4 cr5 = Cells(uv, vec2(10.3245, 233.645) + l3, 9.2,  1.0 - a * 0.90 * u_sizeMicro,  rise * 1.20);
-    vec4 cr6 = Cells(uv, vec2(10.3245, 233.645) + l3, 14.2, 1.0 - a * 0.95 * u_sizeNano,   rise * 1.50);
+
+    vec4 cr1 = Cells(uv, vec2(20.2449,  93.78)  + l1, 2.0,  1.0 - a * 0.50 * u_sizeLarge,  0.018, 12.0);
+    vec4 cr2 = Cells(uv, vec2(0.0,       0.0),         3.0,  1.0 - a * 0.50 * u_sizeMedium, 0.024, 10.0);
+    vec4 cr3 = Cells(uv, vec2(230.79,  193.2)   + l2, 4.0,  1.0 - a * 0.50 * u_sizeSmall,  0.030,  8.0);
+    vec4 cr4 = Cells(uv, vec2(200.19,  393.2)   + l3, 7.0,  1.0 - a * 0.80 * u_sizeTiny,   0.040,  6.0);
+    vec4 cr5 = Cells(uv, vec2(10.3245, 233.645) + l3, 9.2,  1.0 - a * 0.90 * u_sizeMicro,  0.050,  5.0);
+    vec4 cr6 = Cells(uv, vec2(10.3245, 233.645) + l3, 14.2, 1.0 - a * 0.95 * u_sizeNano,   0.060,  4.0);
 
     e = max(e - vec4(dot(cr6, cr6)) * 0.1, 0.0) + cr6 * 1.6;
     e = max(e - vec4(dot(cr5, cr5)) * 0.1, 0.0) + cr5 * 1.6;
@@ -153,8 +158,8 @@ void main() {
     vec3 rawColor = max(e.rgb, 0.0);
     float intensity = dot(rawColor, vec3(0.299, 0.587, 0.114));
 
-    vec3 bright   = min(rawColor * 1.2, 1.0);
-    vec3 darkEdge = vec3(0.0, 0.03, 0.08);
+    vec3 bright     = min(rawColor * 1.2, 1.0);
+    vec3 darkEdge   = vec3(0.0, 0.03, 0.08);
     vec3 finalColor = mix(darkEdge, bright, smoothstep(0.05, 0.4, intensity));
 
     float alpha = clamp(intensity * 1.5, 0.0, 1.0);
