@@ -38,7 +38,7 @@ export function startLoop(
         // ── Render ────────────────────────────────────────────────────────────
         caustic.render(t);
         bubbles.render(t);
-        kelp.render(t);
+        kelp.render(t, mouse);   // pass mouse so kelp can react to horizontal movement
         main.render(
             fish.getSorted(),
             particles.getAll(),
