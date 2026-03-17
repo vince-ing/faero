@@ -1,8 +1,10 @@
 const { app, BrowserWindow, globalShortcut, screen, ipcMain } = require('electron');
+const path = require('path');
 
 let win;
 let interactive = false;
 let visible = true;
+
 
 // WM_ACTIVATE = 0x0006
 // Returning 0 tells Windows this window never "activates",
@@ -41,9 +43,15 @@ app.whenReady().then(() => {
     win.setEnabled(true);
   });
 
-  win.loadURL('http://localhost:5173');
-  win.setIgnoreMouseEvents(true, { forward: true });
+  // Conditionally load the local server or the packaged build
+  if (app.isPackaged) {
+    win.loadFile(path.join(__dirname, '../dist/index.html'));
+  } else {
+    win.loadURL('http://localhost:5173');
+  }
 
+  win.setIgnoreMouseEvents(true, { forward: true });
+  
   ipcMain.on('set-ignore-mouse', (_, ignore) => {
     win.setIgnoreMouseEvents(ignore, { forward: true });
   });

@@ -21,15 +21,15 @@ export const PALETTE = {
 // ── Sprite paths ─────────────────────────────────────────────────────────────
 // Keys must match FishSpecies union in types.ts
 export const FISH_SPRITES: Record<FishSpecies, string> = {
-    clownfish: '/sprites/fish/clownfish.png',
-    angelfish: '/sprites/fish/angelfish.png',
-    tang:      '/sprites/fish/tang.png',
-    tetra:     '/sprites/fish/tetra.png',
-    guppy:     '/sprites/fish/guppy.png',
+    clownfish: './sprites/fish/clownfish.png',
+    angelfish: './sprites/fish/angelfish.png',
+    tang:      './sprites/fish/tang.png',
+    tetra:     './sprites/fish/tetra.png',
+    guppy:     './sprites/fish/guppy.png',
 };
 
-export const BUBBLE_SPRITE  = '/sprites/bubbles/bubble.png';
-export const SPARKLE_SPRITE = '/sprites/particles/sparkle.png';
+export const BUBBLE_SPRITE  = './sprites/bubbles/bubble.png';
+export const SPARKLE_SPRITE = './sprites/particles/sparkle.png';
 
 // ── Species size config ──────────────────────────────────────────────────────
 // Base render height in px at depth=1. Width scales with sprite aspect ratio.

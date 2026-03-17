@@ -8,7 +8,22 @@
     "dev": "vite",
     "electron": "electron .",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "package": "npm run build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.faero.aquarium",
+    "productName": "Faero Aquarium",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   },
   "keywords": [
     "electron",
@@ -21,6 +36,7 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^29.0.0",
+    "electron-builder": "^26.8.1",
     "typescript": "^5.9.3",
     "vite": "^8.0.0"
   },

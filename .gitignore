@@ -16,9 +16,11 @@ pids
 coverage/
 .nyc_output
 
+
 # Build/Dist
 dist/
 build/
+release/
 
 # Environment
 .env
